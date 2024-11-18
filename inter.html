@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copy Text Buttons</title>
+</head>
+<body>
+    <button onclick="copyText('Text 1')">Copy Text 1</button>
+    <button onclick="copyText('Text 2')">Copy Text 2</button>
+    <button onclick="copyText('Text 3')">Copy Text 3</button>
+    <button onclick="copyText('Text 4')">Copy Text 4</button>
+    <button onclick="copyText(`import networkx as nx\nimport matplotlib.pyplot as plt\n\nG = nx.random_k_out_graph(n=8,k=2,alpha=0.2)\ndef draw_graph(G):\n  nx.draw_circular(G, node_size=400, with_labels=True)\n  plt.show()\n  \ndraw_graph(G)\nranks_pr = nx.pagerank(G)\nprint(ranks_pr)`)" >Copy link analysis and page rank</button>
+    <button onclick="copyText('Text 6')">Copy Text 6</button>
+    <button onclick="copyText('Text 7')">Copy Text 7</button>
+    <button onclick="copyText('Text 8')">Copy Text 8</button>
+
+    <script>
+        function copyText(text) {
+            // Create a temporary textarea element to hold the text
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+
+            // Select and copy the text
+            textarea.select();
+            document.execCommand('copy');
+
+            // Remove the temporary textarea element
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+</html>
