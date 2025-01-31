@@ -206,8 +206,6 @@
 
             // Cleanup resources
             try {
-                webgazer.pause();
-                webgazer.stopVideo();
                 webgazer.end();
             } catch (e) {
                 console.log('Webgazer cleanup error:', e);
@@ -233,8 +231,8 @@
                 navigator.mediaDevices.getUserMedia({ 
                     video: { 
                         facingMode: "user",
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
+                        width: { ideal: 840 },
+                        height: { ideal: 880 }
                     } 
                 }).then(stream => {
                     webcamVideo.srcObject = stream;
@@ -248,28 +246,25 @@
         // Start Eye Tracking
         async function startEyeTracking() {
             try {
+                // Initialize WebGazer
                 await webgazer.setRegression('ridge')
                     .setTracker('clmtrackr')
-                    .begin()
-                    .showPredictionPoints(false);
+                    .begin();
 
-                // Add resize listener for responsive tracking
-                window.addEventListener('resize', () => {
-                    webgazer.resume();
-                });
-
+                // Add gaze listener
                 webgazer.setGazeListener(function(data) {
                     if (!gazeListenerActive || !data || isTerminated) return;
                     
-                    const buffer = 100;
+                    const buffer = 50; // Reduced buffer zone for faster detection
                     const container = document.querySelector('.container');
                     const rect = container.getBoundingClientRect();
 
+                    // Immediate termination if gaze is outside the area
                     if (data.x < rect.left - buffer || 
                         data.x > rect.right + buffer || 
                         data.y < rect.top - buffer || 
                         data.y > rect.bottom + buffer) {
-                        showTerminationPopup('Left test area for extended period');
+                        showTerminationPopup('Left test area');
                     }
                 });
             } catch (error) {
