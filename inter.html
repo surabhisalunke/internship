@@ -6,11 +6,6 @@
     <title>MCQ Test</title>
     <link rel="stylesheet" href="/static/result.css">
     <style>
-        /* Style for the entire page when fullscreen is active */
-        body.fullscreen {
-            overflow: hidden;
-        }
-
         /* Popup styles */
         .popup {
             display: none;
@@ -196,43 +191,6 @@
             }
         });
 
-        // Fullscreen functionality
-        function enterFullscreen() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.mozRequestFullScreen) { // Firefox
-                elem.mozRequestFullScreen();
-            } else if (elem.webkitRequestFullscreen) { // Chrome, Safari and Opera
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { // IE/Edge
-                elem.msRequestFullscreen();
-            }
-        }
-
-        function exitFullscreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.mozCancelFullScreen) { // Firefox
-                document.mozCancelFullScreen();
-            } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) { // IE/Edge
-                document.msExitFullscreen();
-            }
-        }
-
-        // Fullscreen change handler with debounce
-        let fullscreenCheck;
-        function handleFullscreenChange() {
-            clearTimeout(fullscreenCheck);
-            fullscreenCheck = setTimeout(() => {
-                if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen) {
-                    showTerminationPopup('Exited fullscreen mode');
-                }
-            }, 1000);
-        }
-
         // Show termination popup with reason
         function showTerminationPopup(reason) {
             if (isTerminated) return;
@@ -326,17 +284,10 @@
                 await startWebcam();
                 await startEyeTracking();
                 showQuestion(0);
-                enterFullscreen();
             } catch (error) {
                 showTerminationPopup('Initialization failed: ' + error.message);
             }
         };
-
-        // Listen for fullscreen changes
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
         // Handle the "Okay" button click to terminate the test
         document.getElementById('ok-btn').addEventListener('click', () => {
