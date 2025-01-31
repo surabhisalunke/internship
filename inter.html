@@ -3,23 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Copy Code Buttons</title>
+    <title>MCQ Test</title>
+    <link rel="stylesheet" href="/static/result.css">
+    <style>
+        /* Style for the entire page when fullscreen is active */
+        body.fullscreen {
+            overflow: hidden;
+        }
+
+        /* Popup styles */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            text-align: center;
+            width: 300px;
+        }
+
+        /* Background blur */
+        .blurred-background {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .popup button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .popup button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Webcam styles */
+        #webcam-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            border: 2px solid #000;
+            background-color: black;
+            z-index: 999;
+            display: none;
+        }
+
+        #termination-reason {
+            color: #dc3545;
+            font-weight: bold;
+            margin: 10px 0;
+            display: block;
+        }
+
+        #webcam-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
 </head>
 <body>
-    <button onclick="copyText(`import tensorflow as tf\nimport numpy as np\nfrom tensorflow.keras.preprocessing.text import Tokenizer\nfrom tensorflow.keras.preprocessing.sequence import pad_sequences\n\n# Step 1: Prepare the dataset\nemails = [\n    \"Buy cheap watches! Free shipping!\", \n    \"Meeting for lunch today?\", \n    \"Claim your prize! You've won $1,000,000!\", \n    \"Important meeting at 3 PM.\"\n]\nlabels = [1, 0, 1, 0]\n\n# Step 2: Tokenize and pad the text data\ntokenizer = Tokenizer(num_words=1000, oov_token='<OOV>')\ntokenizer.fit_on_texts(emails)\nX_padded = pad_sequences(tokenizer.texts_to_sequences(emails), maxlen=50, padding='post')\n\n# Step 3: Define the model\nmodel = tf.keras.Sequential([\n    tf.keras.layers.Embedding(input_dim=1000, output_dim=16),\n    tf.keras.layers.Flatten(),\n    tf.keras.layers.Dense(16, activation='relu'),\n    tf.keras.layers.Dense(1, activation='sigmoid')\n])\n\n# Compile the model\nmodel.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])\n\n# Step 4: Train the model\nmodel.fit(X_padded, np.array(labels), epochs=10)\n\n# Step 5: Predict on a sample email (replace with a file read if needed)\nsample_email = [\"Congratulations! You've won a lottery prize!\"]\nsample_padded = pad_sequences(tokenizer.texts_to_sequences(sample_email), maxlen=50, padding='post')\n\n# Step 6: Classify the email\nprediction = model.predict(sample_padded)\nprint(\"SPAM\" if prediction > 0.5 else \"NOT SPAM\")`)">Spam Classifier</button>
+    <div class="container">
+        <h1>MCQ Test</h1>
+        <div class="content-wrapper">
+            <form id="mcq-form" method="POST" action="/submit">
+                <!-- Single list of all questions -->
+                {% for question in all_questions %}
+                <div class="question" data-index="{{ loop.index0 }}" style="display: none;">
+                    <p><strong>Question {{ loop.index }}:</strong> {{ question.question }}</p>
+                    <ul>
+                        {% for key, option in question.options.items() %}
+                        <li>
+                            <label>
+                                <input type="radio" 
+                                       id="{{ question.question }}-{{ key }}" 
+                                       name="{{ question.question }}" 
+                                       value="{{ key }}"
+                                       data-question="{{ loop.parent.loop.index0 }}">
+                                <label for="{{ question.question }}-{{ key }}">{{ key }}. {{ option }}</label>
+                            </label>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+                
+                <div class="navigation">
+                    <button type="button" id="prev-btn" disabled>Previous</button>
+                    <button type="button" id="next-btn">Next</button>
+                </div>
+                <button type="submit" id="submit-btn" style="display: none;">Submit Answers</button>
+            </form>
+        </div>
 
-    <button onclick="copyText(`# Web Crawling and Indexing\n# Develop a web crawler to fetch and index web pages.\n\nimport nltk\nnltk.download('stopwords')\nnltk.download('punkt')\nimport requests\nfrom bs4 import BeautifulSoup\nfrom urllib.parse import urljoin\nfrom nltk.corpus import stopwords\nfrom nltk.tokenize import word_tokenize\nimport re\n\nprint(\"KSMSCIT028 Surabhi A Salunke\")\nprint(\"---------------------------\")\n\n# Seed URLs\nseed_urls = ['https://indianexpress.com/section/india/', 'https://www.indianretailer.com/restaurant/']\n\n# Keywords to focus on\nkeywords = ['restaurant', 'food', 'local']\n\n# Stop words to filter out common words\nstop_words = set(stopwords.words('english'))\n\n# Visited URLs\nvisited = set()\n\ndef is_relevant(content, keywords):\n    words = word_tokenize(content.lower())\n    words = [w for w in words if w.isalnum() and w not in stop_words]\n    return any(keyword in words for keyword in keywords)\n\ndef crawl(url):\n    try:\n        response = requests.get(url)\n        soup = BeautifulSoup(response.content, 'html.parser')\n        text = soup.get_text()\n\n        if is_relevant(text, keywords):\n            print(f\"Relevant content found at: {url}\")\n\n            for link in soup.find_all('a', href=True):\n                new_url = urljoin(url, link['href'])\n                if new_url not in visited and re.match(r'^https?://', new_url):\n                    visited.add(new_url)\n                    crawl(new_url)\n    except requests.exceptions.RequestException as e:\n        print(f\"Error crawling {url}: {e}\")\n\n# Start crawling from the seed URLs\nfor url in seed_urls:\n    if url not in visited:\n        visited.add(url)\n        crawl(url)`)">Web Crawling and Indexing</button>
+        <!-- Simplified Question Tracker -->
+        <div class="question-tracker">
+            <h3>Question Tracker</h3>
+            <div id="tracker">
+                {% for question in all_questions %}
+                <button class="tracker-btn" data-index="{{ loop.index0 }}">{{ loop.index }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
+    <!-- Popup Modal -->
+    <div id="test-terminated-popup" class="popup">
+        <p>Test Terminated</p>
+        <span id="termination-reason"></span>
+        <button id="ok-btn">Okay</button>
+    </div>
+
+    <!-- Webcam Container -->
+    <div id="webcam-container">
+        <video id="webcam-video" autoplay></video>
+    </div>
+
+    <!-- WebGazer.js Script -->
+    <script src="https://webgazer.cs.brown.edu/webgazer.js?"></script>
     <script>
-        function copyText(text) {
-            navigator.clipboard.writeText(text)
-                .then(() => {
-                    console.log('Text copied to clipboard');
-                })
-                .catch(err => {
-                    console.error('Failed to copy text: ', err);
-                });
+        let currentQuestionIndex = 0;
+        let isTerminated = false; // Flag to prevent multiple terminations
+        let gazeListenerActive = true; // Control eye tracking listener
+
+        const questions = document.querySelectorAll('.question');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const trackerBtns = document.querySelectorAll('.tracker-btn');
+        let answeredQuestions = new Set();
+
+        // Initialize tracker buttons
+        trackerBtns.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                currentQuestionIndex = index;
+                showQuestion(currentQuestionIndex);
+            });
+        });
+
+        function showQuestion(index) {
+            // Hide all questions
+            questions.forEach(q => q.style.display = 'none');
+            
+            // Show current question
+            questions[index].style.display = 'block';
+            
+            // Update navigation buttons
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === questions.length - 1;
+            submitBtn.style.display = index === questions.length - 1 ? 'block' : 'none';
+
+            // Update tracker highlights
+            trackerBtns.forEach(btn => {
+                const btnIndex = parseInt(btn.dataset.index);
+                btn.classList.toggle('active', btnIndex === index);
+                btn.classList.toggle('answered', answeredQuestions.has(btnIndex));
+            });
         }
+
+        // Radio button change handler
+        document.querySelectorAll('input[type="radio"]').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const questionIndex = parseInt(e.target.dataset.question);
+                answeredQuestions.add(questionIndex);  // Mark question as answered
+            });
+        });
+
+        // Navigation handlers
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion(currentQuestionIndex);
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion(currentQuestionIndex);
+            }
+        });
+
+        // Fullscreen functionality
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.mozRequestFullScreen) { // Firefox
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { // IE/Edge
+                elem.msRequestFullscreen();
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) { // Firefox
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { // IE/Edge
+                document.msExitFullscreen();
+            }
+        }
+
+        // Fullscreen change handler with debounce
+        let fullscreenCheck;
+        function handleFullscreenChange() {
+            clearTimeout(fullscreenCheck);
+            fullscreenCheck = setTimeout(() => {
+                if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen) {
+                    showTerminationPopup('Exited fullscreen mode');
+                }
+            }, 1000);
+        }
+
+        // Show termination popup with reason
+        function showTerminationPopup(reason) {
+            if (isTerminated) return;
+            isTerminated = true;
+            gazeListenerActive = false;
+
+            const popup = document.getElementById('test-terminated-popup');
+            const reasonElement = document.getElementById('termination-reason');
+            
+            reasonElement.textContent = `Reason: ${reason}`;
+            popup.style.display = 'block';
+            document.querySelector('.container').classList.add('blurred-background');
+
+            // Cleanup resources
+            try {
+                webgazer.pause();
+                webgazer.stopVideo();
+                webgazer.end();
+            } catch (e) {
+                console.log('Webgazer cleanup error:', e);
+            }
+
+            const video = document.getElementById('webcam-video');
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => {
+                    track.stop();
+                    track.enabled = false;
+                });
+            }
+        }
+
+        // Start Webcam
+        async function startWebcam() {
+            return new Promise((resolve, reject) => {
+                const webcamContainer = document.getElementById('webcam-container');
+                const webcamVideo = document.getElementById('webcam-video');
+
+                webcamContainer.style.display = 'block';
+                
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: "user",
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    } 
+                }).then(stream => {
+                    webcamVideo.srcObject = stream;
+                    webcamVideo.onloadedmetadata = () => resolve();
+                }).catch(error => {
+                    reject(new Error('Webcam access denied: ' + error.message));
+                });
+            });
+        }
+
+        // Start Eye Tracking
+        async function startEyeTracking() {
+            try {
+                await webgazer.setRegression('ridge')
+                    .setTracker('clmtrackr')
+                    .begin()
+                    .showPredictionPoints(false);
+
+                // Add resize listener for responsive tracking
+                window.addEventListener('resize', () => {
+                    webgazer.resume();
+                });
+
+                webgazer.setGazeListener(function(data) {
+                    if (!gazeListenerActive || !data || isTerminated) return;
+                    
+                    const buffer = 100;
+                    const container = document.querySelector('.container');
+                    const rect = container.getBoundingClientRect();
+
+                    if (data.x < rect.left - buffer || 
+                        data.x > rect.right + buffer || 
+                        data.y < rect.top - buffer || 
+                        data.y > rect.bottom + buffer) {
+                        showTerminationPopup('Left test area for extended period');
+                    }
+                });
+            } catch (error) {
+                console.error('Eye tracking failed:', error);
+                showTerminationPopup('Monitoring system error: ' + error.message);
+            }
+        }
+
+        // Initialize the test
+        window.onload = async function() {
+            try {
+                await startWebcam();
+                await startEyeTracking();
+                showQuestion(0);
+                enterFullscreen();
+            } catch (error) {
+                showTerminationPopup('Initialization failed: ' + error.message);
+            }
+        };
+
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        // Handle the "Okay" button click to terminate the test
+        document.getElementById('ok-btn').addEventListener('click', () => {
+            window.location.href = '/test-terminated';
+        });
     </script>
 </body>
 </html>
