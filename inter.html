@@ -23,188 +23,196 @@
 
   <script>
     function copyToClipboard(code) {
-      navigator.clipboard.writeText(code);
+      try {
+        navigator.clipboard.writeText(code).then(() => {
+          console.log('Code copied to clipboard successfully.');
+        }).catch(err => {
+          console.error('Failed to copy code:', err);
+        });
+      } catch (err) {
+        console.error('Error in copyToClipboard:', err);
+      }
     }
 
     function copyCode1() {
       copyToClipboard(`
       import pandas as pd
-    
+
     # Load datasets
     movies = pd.read_csv('movies.csv')
     ratings = pd.read_csv('ratings.csv')
-    
+
     # Merge and clean
     df = ratings.merge(movies, on='movieId')
     df.drop(columns=['timestamp', 'genres'], inplace=True)
-    
+
     # Create user-movie matrix
     matrix = df.pivot_table(values='rating', index='movieId', columns='userId').fillna(0)
-    
+
     # Compute user similarity (correlation)
     similar_users = matrix.corr(method='pearson')[2].sort_values(ascending=False).drop(2).head(10)
-    
+
     # Merge top similar users with their rated movies
     similar_df = df[df['userId'].isin(similar_users.index)].copy()
     similar_df['similarity'] = similar_df['userId'].map(similar_users)
     similar_df['score'] = similar_df['similarity'] * similar_df['rating']
-    
+
     # Remove movies already watched by user 2
     watched = df[df['userId'] == 2]['movieId']
     recommended = similar_df[~similar_df['movieId'].isin(watched)]
-    
+
     # Top 10 recommended movie titles
     top_movies = recommended.groupby('title')['score'].mean().sort_values(ascending=False).head(10).reset_index()
     print(top_movies)
-
       `);
     }
 
+
     function copyCode2() {
       copyToClipboard(`
-import os
-import sys
-from pathlib import Path
-
-import pandas as pd
-import numpy as np
-
-# Options for pandas
-pd.options.display.max_columns = 50
-pd.options.display.max_rows = 30
-pd.options.display.float_format = '{:,.4f}'.format
-
-# autoreload extension
-%load_ext autoreload
-%autoreload 2
-
-
-sys.path.insert(0, str(Path.cwd().parent))
-
-import ast
-from PIL import Image
-REPO_PATH = Path.cwd()
-
-report_path = '/content/BigData_sizes.csv'
-df = pd.read_csv(report_path, converters={'logo_path': str, 'description_html': str,
-                                          'logo_rendering': ast.literal_eval,
-                                          'arrow_specs': ast.literal_eval
-                                          })
-
-df
-
-sort_idx = df.sort_values('size_PB').index
-df.loc[sort_idx]
-
-import plotly.graph_objects as go
-
-big_lbls = df.loc[df.size_label.str.contains('EB'), 'size_label']
-df.loc[df.size_label.str.contains('EB'), 'size_label'] = ''
-
-
-layout = {
-    'template': "plotly_white",
-    'paper_bgcolor': 'rgba(0,0,0,0)',
-    'plot_bgcolor': 'rgba(0,0,0,0)',
-    'title': {
-        'x': 0.5, 'xanchor': 'center'
-    },
-    'font': dict(
-        family="Helvetica",
-        size=18,
-    ),
-    'showlegend': False,
-    'autosize': False,
-    'width': 1400,
-    'height': 720,
-    'margin': dict(l=0, r=0, t=0, b=0),
-}
-
-# Bubble plot
-fig = go.Figure(data=[
-    go.Scatter(
-        x=df.x, y=df.size_PB,
-        #         x0=1,dx=6,
-        mode='markers+text',
-        marker=dict(
-            size=df.area_size,
-            color=df.color,
-            opacity=[0.7]*(df.shape[0]-1) + [0.4],
-            sizemin=12,
-            sizemode='area',
-            sizeref=2. * df.area_size.max() / (840 ** 2)
-        ),
-        text=df.size_label.str.replace('yr', 'y'),
-        textposition='bottom center',
-        textfont=dict(size=14),
-    )
-]
-)
-
-# Big bubbles labels
-fig.add_trace(go.Scatter(
-    x=[42, 74, 71],
-    y=[20000, 3800, 25],
-    mode="text",
-    text=big_lbls,
-    textposition="bottom center",
-    textfont=dict(size=[14, 14, 18])
-))
-
-# Image annotations
-logos_path = REPO_PATH / "/content/"
-
-for v in df[['logo_path', 'logo_rendering']].itertuples():
-    if not v.logo_path:
-        continue
-    src = Image.open(logos_path / v.logo_path)  # logos_path + v.logo_path
-
-    xpos, ypos, xs, ys = v.logo_rendering
-    fig.add_layout_image(
-        dict(
-            source=src,
-            xref="paper", yref="paper",
-            x=xpos, y=ypos,
-            sizex=xs, sizey=ys,
-            xanchor="right", yanchor="bottom"
+        import os
+        import sys
+        from pathlib import Path
+        
+        import pandas as pd
+        import numpy as np
+        
+        # Options for pandas
+        pd.options.display.max_columns = 50
+        pd.options.display.max_rows = 30
+        pd.options.display.float_format = '{:,.4f}'.format
+        
+        # autoreload extension
+        %load_ext autoreload
+        %autoreload 2
+        
+        
+        sys.path.insert(0, str(Path.cwd().parent))
+        
+        import ast
+        from PIL import Image
+        REPO_PATH = Path.cwd()
+        
+        report_path = '/content/BigData_sizes.csv'
+        df = pd.read_csv(report_path, converters={'logo_path': str, 'description_html': str,
+                                                  'logo_rendering': ast.literal_eval,
+                                                  'arrow_specs': ast.literal_eval
+                                                  })
+        
+        df
+        
+        sort_idx = df.sort_values('size_PB').index
+        df.loc[sort_idx]
+        
+        import plotly.graph_objects as go
+        
+        big_lbls = df.loc[df.size_label.str.contains('EB'), 'size_label']
+        df.loc[df.size_label.str.contains('EB'), 'size_label'] = ''
+        
+        
+        layout = {
+            'template': "plotly_white",
+            'paper_bgcolor': 'rgba(0,0,0,0)',
+            'plot_bgcolor': 'rgba(0,0,0,0)',
+            'title': {
+                'x': 0.5, 'xanchor': 'center'
+            },
+            'font': dict(
+                family="Helvetica",
+                size=18,
+            ),
+            'showlegend': False,
+            'autosize': False,
+            'width': 1400,
+            'height': 720,
+            'margin': dict(l=0, r=0, t=0, b=0),
+        }
+        
+        # Bubble plot
+        fig = go.Figure(data=[
+            go.Scatter(
+                x=df.x, y=df.size_PB,
+                #         x0=1,dx=6,
+                mode='markers+text',
+                marker=dict(
+                    size=df.area_size,
+                    color=df.color,
+                    opacity=[0.7]*(df.shape[0]-1) + [0.4],
+                    sizemin=12,
+                    sizemode='area',
+                    sizeref=2. * df.area_size.max() / (840 ** 2)
+                ),
+                text=df.size_label.str.replace('yr', 'y'),
+                textposition='bottom center',
+                textfont=dict(size=14),
+            )
+        ]
         )
-    )
-
-
-# Text annotations
-for v in df[['description_html', 'arrow_specs']].itertuples():
-    if not v.arrow_specs:
-        continue
-    xpos, ypos, xlen, ylen = v.arrow_specs
-    fig.add_annotation(
-        xref="x", yref="y domain",
-        x=xpos, y=ypos,
-        ax=xlen, ay=ylen,
-        text=v.description_html,
-        showarrow=True,
-        arrowhead=0,
-        font=dict(size=14),
-    )
-
-# Layout
-fig.update_layout(
-    yaxis=dict(
-        type="log",
-        range=[1, 7.5],
-        visible=True,
-    ),
-    yaxis_title="log size (PB)",
-    xaxis_title="source",
-    xaxis=dict(
-        range=[-4.5, df.x.max()+2],
-        visible=True,
-        showticklabels=False,
-    ),
-)
-
-fig.update_layout(layout)
-
-fig.show()
+        
+        # Big bubbles labels
+        fig.add_trace(go.Scatter(
+            x=[42, 74, 71],
+            y=[20000, 3800, 25],
+            mode="text",
+            text=big_lbls,
+            textposition="bottom center",
+            textfont=dict(size=[14, 14, 18])
+        ))
+        
+        # Image annotations
+        logos_path = REPO_PATH / "/content/"
+        
+        for v in df[['logo_path', 'logo_rendering']].itertuples():
+            if not v.logo_path:
+                continue
+            src = Image.open(logos_path / v.logo_path)  # logos_path + v.logo_path
+        
+            xpos, ypos, xs, ys = v.logo_rendering
+            fig.add_layout_image(
+                dict(
+                    source=src,
+                    xref="paper", yref="paper",
+                    x=xpos, y=ypos,
+                    sizex=xs, sizey=ys,
+                    xanchor="right", yanchor="bottom"
+                )
+            )
+        
+        
+        # Text annotations
+        for v in df[['description_html', 'arrow_specs']].itertuples():
+            if not v.arrow_specs:
+                continue
+            xpos, ypos, xlen, ylen = v.arrow_specs
+            fig.add_annotation(
+                xref="x", yref="y domain",
+                x=xpos, y=ypos,
+                ax=xlen, ay=ylen,
+                text=v.description_html,
+                showarrow=True,
+                arrowhead=0,
+                font=dict(size=14),
+            )
+        
+        # Layout
+        fig.update_layout(
+            yaxis=dict(
+                type="log",
+                range=[1, 7.5],
+                visible=True,
+            ),
+            yaxis_title="log size (PB)",
+            xaxis_title="source",
+            xaxis=dict(
+                range=[-4.5, df.x.max()+2],
+                visible=True,
+                showticklabels=False,
+            ),
+        )
+        
+        fig.update_layout(layout)
+        
+        fig.show()
       `);
     }
 
